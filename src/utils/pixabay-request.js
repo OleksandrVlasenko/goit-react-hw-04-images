@@ -43,8 +43,6 @@ class fetchImgs {
   }
 
   async getImgs() {
-    console.log('fetchImgs  getImgs  page:', this.options);
-
     return await axios.request(this.options);
   }
 }

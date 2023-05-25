@@ -21,8 +21,6 @@ export const App = () => {
     }
 
     async function fetchData() {
-      console.log('fetchData  currentPage:', currentPage);
-
       try {
         setLoading(true);
 
