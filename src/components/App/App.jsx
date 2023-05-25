@@ -1,88 +1,91 @@
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Grid } from 'react-loader-spinner';
 
 import { Searchbar } from 'components/Searchbar/Searchbar';
 import { ImageGallery } from 'components/ImageGallery/ImageGallery';
 import { Button } from 'components/Button/Button';
-import { Modal } from 'components/Modal/Modal';
 import { fetchImgsInstance } from 'utils/pixabay-request';
+import { Message } from 'utils/message';
 import './App.modules.css';
 
-export class App extends Component {
-  state = {
-    images: [],
-    total: 0,
-    showModal: false,
-    largeImageURL: '',
-    alt: '',
-    loading: false,
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(null);
+  const [searchingName, setSearchingName] = useState('');
 
-  handleSubmit = (hits, totalHits) => {
-    this.setState({ images: hits, total: totalHits });
-  };
+  useEffect(() => {
+    if (!currentPage) {
+      return;
+    }
 
-  getlargeImageURL = largeImageURL => {
-    this.setState({ largeImageURL });
-  };
+    async function fetchData() {
+      console.log('fetchData  currentPage:', currentPage);
 
-  getAlt = alt => {
-    this.setState({ alt });
-  };
+      try {
+        setLoading(true);
 
-  toogleModal = () => {
-    this.setState(({ showModal }) => ({
-      showModal: !showModal,
-    }));
-  };
+        fetchImgsInstance.page = currentPage;
+        fetchImgsInstance.searchName = searchingName;
 
-  toogleLoader = () => {
-    this.setState(({ loading }) => ({
-      loading: !loading,
-    }));
-  };
+        const {
+          data: { hits, totalHits },
+        } = await fetchImgsInstance.getImgs();
 
-  render() {
-    const { images, total, showModal, largeImageURL, alt, loading } =
-      this.state;
-    return (
-      <div className="App">
-        <Searchbar
-          onSubmit={this.handleSubmit}
-          toogleLoader={this.toogleLoader}
-        />
+        if (totalHits === 0) {
+          Message.failure(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+          setImages([]);
+          setTotal(0);
+          return;
+        }
 
-        <ImageGallery
-          images={images}
-          onClick={this.toogleModal}
-          getAlt={this.getAlt}
-          getlargeImageURL={this.getlargeImageURL}
-        />
-        {total > fetchImgsInstance.page * fetchImgsInstance.perPage && (
-          <Button
-            onSubmit={this.handleSubmit}
-            images={images}
-            toogleLoader={this.toogleLoader}
-          />
-        )}
-        <Grid
-          height="40"
-          width="40"
-          color="#3f51b5"
-          ariaLabel="grid-loading"
-          radius="12.5"
-          wrapperStyle={{}}
-          wrapperClass="Loader"
-          visible={loading}
-        />
-        {showModal && (
-          <Modal
-            onClose={this.toogleModal}
-            largeImageURL={largeImageURL}
-            alt={alt}
-          />
-        )}
-      </div>
-    );
-  }
-}
+        const newImages = hits.map(
+          ({ id, webformatURL, tags, largeImageURL }) => ({
+            id,
+            webformatURL,
+            tags,
+            largeImageURL,
+          })
+        );
+
+        if (currentPage === 1) {
+          setImages(newImages);
+        } else {
+          setImages(prevImages => [...prevImages, ...newImages]);
+        }
+
+        setTotal(totalHits);
+      } catch (error) {
+        Message.failure(error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [currentPage, searchingName]);
+
+  return (
+    <div className="App">
+      <Searchbar setName={setSearchingName} onCurrentPage={setCurrentPage} />
+
+      <ImageGallery images={images} />
+      {total > currentPage * fetchImgsInstance.perPage && (
+        <Button currentPage={currentPage} onCurrentPage={setCurrentPage} />
+      )}
+      <Grid
+        height="40"
+        width="40"
+        color="#3f51b5"
+        ariaLabel="grid-loading"
+        radius="12.5"
+        wrapperStyle={{}}
+        wrapperClass="Loader"
+        visible={loading}
+      />
+    </div>
+  );
+};

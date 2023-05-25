@@ -13,7 +13,6 @@ class fetchImgs {
       q: '',
       image_type: 'photo',
       orientation: 'horizontal',
-      safesearch: true,
       page: 1,
       per_page: 12,
     },
@@ -44,9 +43,10 @@ class fetchImgs {
   }
 
   async getImgs() {
+    console.log('fetchImgs  getImgs  page:', this.options);
+
     return await axios.request(this.options);
   }
 }
 
 export const fetchImgsInstance = new fetchImgs();
-

@@ -1,10 +1,9 @@
-import React from 'components/ImageGallery/ImageGallery';
 import PropTypes from 'prop-types';
 
 import { ImageGalleryItem } from 'components/ImageGalleryItem/ImageGalleryItem';
 import './ImageGallery.modules.css';
 
-export const ImageGallery = ({ images, onClick, getAlt, getlargeImageURL }) => {
+export const ImageGallery = ({ images }) => {
   return (
     <ul className="ImageGallery">
       {images.map(({ id, webformatURL, tags, largeImageURL }) => (
@@ -12,9 +11,7 @@ export const ImageGallery = ({ images, onClick, getAlt, getlargeImageURL }) => {
           key={id}
           imageLink={webformatURL}
           imageDescription={tags}
-          onClick={onClick}
-          getAlt={() => getAlt(id)}
-          getlargeImageURL={() => getlargeImageURL(largeImageURL)}
+          largeImageURL={largeImageURL}
         />
       ))}
     </ul>
@@ -23,7 +20,4 @@ export const ImageGallery = ({ images, onClick, getAlt, getlargeImageURL }) => {
 
 ImageGallery.propTypes = {
   images: PropTypes.array.isRequired,
-  onClick: PropTypes.func.isRequired,
-  getAlt: PropTypes.func.isRequired,
-  getlargeImageURL: PropTypes.func.isRequired,
 };

@@ -1,37 +1,41 @@
-import React from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import "./ImageGalleryItem.modules.css"
+import { Modal } from 'components/Modal/Modal';
+import './ImageGalleryItem.modules.css';
 
 export const ImageGalleryItem = ({
   imageLink,
   imageDescription,
-  onClick,
-  getAlt,
-  getlargeImageURL,
+  largeImageURL,
 }) => {
+  const [isModalOpen, setIsOpenModal] = useState(false);
+
+  const toogleOpenModal = () => {
+    setIsOpenModal(!isModalOpen);
+  };
   return (
-    <li
-      className="ImageGalleryItem"
-      onClick={() => {
-        onClick();
-        getAlt();
-        getlargeImageURL();
-      }}
-    >
-      <img
-        className="ImageGalleryItem-image"
-        src={imageLink}
-        alt={imageDescription}
-      />
-    </li>
+    <>
+      <li className="ImageGalleryItem" onClick={toogleOpenModal}>
+        <img
+          className="ImageGalleryItem-image"
+          src={imageLink}
+          alt={imageDescription}
+        />
+      </li>
+      {isModalOpen && (
+        <Modal
+          onClose={toogleOpenModal}
+          largeImageURL={largeImageURL}
+          alt={imageDescription}
+        />
+      )}
+    </>
   );
 };
 
 ImageGalleryItem.propType = {
   imageLink: PropTypes.string.isRequired,
   imageDescription: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired,
-  getAlt: PropTypes.func.isRequired,
-  getlargeImageURL: PropTypes.func.isRequired,
+  largeImageURL: PropTypes.string.isRequired,
 };

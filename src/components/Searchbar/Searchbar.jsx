@@ -1,81 +1,54 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { ImSearch } from 'react-icons/im';
 import PropTypes from 'prop-types';
 
+// import { fetchImgsInstance } from 'utils/pixabay-request';
 import { Message } from 'utils/message';
-import { fetchImgsInstance } from 'utils/pixabay-request';
 import './Searchbar.modules.css';
 
-export class Searchbar extends Component {
-  state = {
-    searchName: '',
+export const Searchbar = ({ setName, onCurrentPage }) => {
+  const [searchName, setSearchName] = useState('');
+
+  const handleSearchNameChange = e => {
+    setSearchName(e.currentTarget.value.toLowerCase());
   };
 
-  handleSearchNameChange = e => {
-    this.setState({ searchName: e.currentTarget.value.toLowerCase() });
-  };
-
-  handleSubmit = async e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    const { searchName } = this.state;
 
     if (searchName.trim() === '') {
       Message.warning('Поле не має бути пустим');
       return;
     }
 
-    fetchImgsInstance.page = 1;
-    fetchImgsInstance.searchName = searchName;
+    setName(searchName.trim());
+    onCurrentPage(1);
 
-    this.props.toogleLoader();
-
-    try {
-      const {
-        data: { hits, totalHits },
-      } = await fetchImgsInstance.getImgs();
-
-      this.props.onSubmit(hits, totalHits);
-
-      if (totalHits === 0) {
-        Message.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        this.props.toogleLoader();
-        return;
-      }
-
-      this.setState({ searchName: '' });
-    } catch (error) {
-      Message.failure(error.message);
-    }
-
-    this.props.toogleLoader();
+    setSearchName('');
   };
 
-  render() {
-    return (
-      <header className="Searchbar">
-        <form onSubmit={this.handleSubmit} className="SearchForm">
-          <button type="submit" className="SearchForm-button">
-            <ImSearch />
-          </button>
+  return (
+    <header className="Searchbar">
+      <form onSubmit={handleSubmit} className="SearchForm">
+        <button type="submit" className="SearchForm-button">
+          <ImSearch />
+        </button>
 
-          <input
-            onChange={this.handleSearchNameChange}
-            className="SearchForm-input"
-            type="text"
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            value={this.state.searchName}
-          />
-        </form>
-      </header>
-    );
-  }
-}
+        <input
+          onChange={handleSearchNameChange}
+          className="SearchForm-input"
+          type="text"
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          value={searchName}
+        />
+      </form>
+    </header>
+  );
+};
 
 Searchbar.propType = {
-  onSubmit: PropTypes.func.isRequired,
-  toogleLoader: PropTypes.func.isRequired,
+  setName: PropTypes.func.isRequired,
+  onCurrentPage: PropTypes.func.isRequired,
 };
